@@ -12,8 +12,10 @@ import (
 func main() {
 	grpc.WithInsecure()
 	ctx := context.Background()
-	client := demo.Client{}
-	client.ServerAddr = "127.0.0.1:21000"
+	client, err := demo.NewClient("127.0.0.1:21000")
+	if err != nil {
+		panic(err)
+	}
 	req := &demo.EchoReq{
 		Message: "hello anser",
 	}

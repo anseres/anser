@@ -1,16 +1,16 @@
-package demo
+package {{.LowerServiceName}}
 
 import (
 	context "golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
 
-// Client is a Demo Client
+// Client is a {{.ServiceName}} Client
 type Client struct {
 	ServerAddr string
 
 	GRPCConn   *grpc.ClientConn
-	GRPCClient DemoClient
+	GRPCClient {{.ServiceName}}Client
 }
 
 func NewClient(addr string) (*Client, error) {
@@ -34,11 +34,11 @@ func (c *Client) init() error {
 			return err
 		}
 	}
-	c.GRPCClient = NewDemoClient(c.GRPCConn)
+	c.GRPCClient = New{{.ServiceName}}Client(c.GRPCConn)
 	return nil
 }
 
-// Close close Demo.Client
+// Close close {{.ServiceName}}.Client
 func (c *Client) Close() error {
 	if c.GRPCConn != nil {
 		return c.GRPCConn.Close()
@@ -46,11 +46,16 @@ func (c *Client) Close() error {
 	return nil
 }
 
-// Echo call Demo.Echo with gRPC
-func (c *Client) Echo(ctx context.Context, req *EchoReq) (*EchoResp, error) {
-	resp, err := c.GRPCClient.Echo(ctx, req)
+{{- $ServiceName := .ServiceName -}}
+
+{{ range .Services }}
+
+// {{.MethodName}} call {{$ServiceName}}.{{.MethodName}} with gRPC
+func (c *Client) {{.MethodName}}(ctx context.Context, req *{{.InputTypeName}}) (*{{.OutputTypeName}}, error) {
+	resp, err := c.GRPCClient.{{.MethodName}}(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 	return resp, nil
 }
+{{- end }}

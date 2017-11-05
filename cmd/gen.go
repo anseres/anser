@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"os/exec"
 
 	"github.com/spf13/cobra"
 )
@@ -21,6 +23,24 @@ var (
 	protoFile string
 )
 
+// protoc -I.  demo.proto --anser_out=.
 func gen(cmd *cobra.Command, args []string) {
 	fmt.Printf("gen services\n")
+	if protoFile == "" {
+		fmt.Printf("please input proto file\n")
+		os.Exit(1)
+	}
+
+	pb_cmd := exec.Command("protoc", "-I.", protoFile, "--anser_out=.")
+	out, err := pb_cmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("error: %s", string(out))
+		panic(err)
+	}
+	pb_cmd = exec.Command("protoc", "-I.", protoFile, "--go_out=plugins=grpc:.")
+	out, err = pb_cmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("error: %s", string(out))
+		panic(err)
+	}
 }

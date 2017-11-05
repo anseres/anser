@@ -1,12 +1,17 @@
 package generator
 
 import (
+	"bytes"
+	"fmt"
+	"html/template"
+	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 	"unicode"
 
+	"github.com/gogo/protobuf/proto"
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
 )
@@ -36,14 +41,14 @@ func New() *Generator {
 // Error reports a problem, including an error, and exits the program.
 func (g *Generator) Error(err error, msgs ...string) {
 	s := strings.Join(msgs, " ") + ":" + err.Error()
-	log.Print("protoc-gen-go: error:", s)
+	log.Print("protoc-gen-anser: error:", s)
 	os.Exit(1)
 }
 
 // Fail reports a problem and exits the program.
 func (g *Generator) Fail(msgs ...string) {
 	s := strings.Join(msgs, " ")
-	log.Print("protoc-gen-go: error:", s)
+	log.Print("protoc-gen-anser: error:", s)
 	os.Exit(1)
 }
 
@@ -62,6 +67,43 @@ func (g *Generator) CommandLineParameters(parameter string) {
 }
 
 func (g *Generator) GenerateAllFiles() {
+	m := map[string]interface{}{}
+	if len(g.Request.ProtoFile) != 1 {
+		g.Fail(fmt.Sprintf("only support gen 1 proto file, give %d", len(g.Request.ProtoFile)))
+	}
+	file := g.Request.ProtoFile[0]
+	if len(file.Service) != 1 {
+		g.Fail(fmt.Sprintf("only support gen 1 service in file %s, give %d", file.GetName(), len(file.Service)))
+	}
+	service := file.Service[0]
+	LowerServiceName := strings.ToLower(service.GetName())
+	m["ServiceName"] = service.GetName()
+	m["LowerServiceName"] = LowerServiceName
+	services := []interface{}{}
+	for _, method := range service.Method {
+		s := map[string]interface{}{}
+		s["MethodName"] = method.GetName()
+		s["InputTypeName"] = lastName(method.GetInputType())
+		s["OutputTypeName"] = lastName(method.GetOutputType())
+		services = append(services, s)
+	}
+	m["Services"] = services
+
+	prefix := "/Users/dworld/go/src/github.com/anseres/anser/protoc-gen-anser/generator/tmpl"
+	data, err := ioutil.ReadFile(prefix + "/client.go.tmpl")
+	if err != nil {
+		g.Error(err, "read client.go.tmpl error")
+	}
+	t := template.Must(template.New("client.go.tmpl").Parse(string(data)))
+	buf := &bytes.Buffer{}
+	err = t.Execute(buf, m)
+	if err != nil {
+		g.Error(err, "execute client.go.tmpl error")
+	}
+	g.Response.File = append(g.Response.File, &plugin.CodeGeneratorResponse_File{
+		Name:    proto.String(LowerServiceName + "_client.go"),
+		Content: proto.String(buf.String()),
+	})
 }
 
 // And now lots of helper functions.
@@ -251,6 +293,14 @@ func baseName(name string) string {
 	// Now drop the suffix
 	if i := strings.LastIndex(name, "."); i >= 0 {
 		name = name[0:i]
+	}
+	return name
+}
+
+func lastName(name string) string {
+	// First, find the last element
+	if i := strings.LastIndex(name, "."); i >= 0 {
+		name = name[i+1:]
 	}
 	return name
 }
