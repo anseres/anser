@@ -31,14 +31,14 @@ func gen(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	pb_cmd := exec.Command("protoc", "-I.", protoFile, "--anser_out=.")
-	out, err := pb_cmd.CombinedOutput()
+	pbCmd := exec.Command("protoc", "-I.", protoFile, "--anser_out=.")
+	out, err := pbCmd.CombinedOutput()
 	if err != nil {
 		fmt.Printf("error: %s", string(out))
 		panic(err)
 	}
-	pb_cmd = exec.Command("protoc", "-I.", protoFile, "--go_out=plugins=grpc:.")
-	out, err = pb_cmd.CombinedOutput()
+	pbCmd = exec.Command("protoc", "-I.", protoFile, "--go_out=plugins=grpc:.")
+	out, err = pbCmd.CombinedOutput()
 	if err != nil {
 		fmt.Printf("error: %s", string(out))
 		panic(err)
