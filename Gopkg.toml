@@ -40,3 +40,27 @@
 [[constraint]]
   name = "google.golang.org/grpc"
   version = "1.7.3"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/golang/glog"
+
+[[constraint]]
+  branch = "master"
+  name = "golang.org/x/oauth2"
+
+[[constraint]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+
+[[constraint]]
+  name = "github.com/cpuguy83/go-md2man"
+  version = "1.0.7"
+
+[[constraint]]
+  name = "github.com/spf13/viper"
+  version = "1.0.0"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/mitchellh/go-homedir"
