@@ -18,9 +18,9 @@ install:
   - cd $GOPATH/src/github.com/anseres/anser
 
 script:
-    - overalls -project=github.com/anseres/anser -covermode=count -ignore='.git,vendor'
+    - overalls -project=github.com/anseres/anser -covermode=count -ignore='.git,vendor,protoc-gen-anser'
     - goveralls -coverprofile=overalls.coverprofile -service=travis-ci -repotoken $COVERALLS_TOKEN
-    - go test
+    - go test $(go list ./...|grep -v vendor/|grep -v protoc-gen-anser/)
 
 env:
   global:
