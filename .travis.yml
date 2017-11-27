@@ -1,0 +1,27 @@
+language: go
+sudo: false
+
+notifications:
+  email:
+    recipients:
+      - yangwen.yw@gmail.com
+  on_success: change
+  on_failure: always
+
+go:
+  - 1.8.3
+
+install:
+  - go get github.com/go-playground/overalls
+  - go get github.com/mattn/goveralls
+  - mkdir -p $GOPATH/src/github.com/anseres
+  - cd $GOPATH/src/github.com/anseres/anser
+
+script:
+    - overalls -project=github.com/anseres/anser -covermode=count -ignore='.git,vendor,protoc-gen-anser'
+    - goveralls -coverprofile=overalls.coverprofile -service=travis-ci -repotoken $COVERALLS_TOKEN
+    - go test $(go list ./...|grep -v vendor/|grep -v protoc-gen-anser/)
+
+env:
+  global:
+    secure: "IGGag4D0MGgHjwYnvVS3Xm6nbCyjxMm/6e/SLFViRWYoclUY7aOpQ6uRb5aRASNZHTRNzpiX8JXBqUopC9wAJDpT6hVH8bZLZQK/h19YX68OKW9ND2CTGSgPAmKUeqHavjWcA/cT4bQdnQ6JT9o/+67l0e9q2Yda+Tw3HwMCBWefrvKR/ruVHE16LR7OXaEIXm+XsCTD32VhiEJJzX+9MFPCRW91WBVvBjuDTYzIgcX5dd4NtE9i39KSeL7rxiXbnApYHsDOSvMimOhz8dC7sdbmPNhkBJ3jQ4TbBGBG2+wZjKF/E8JpwSoUItx8UIVzs0SN0t/LDoq/uTzyeiyzggbITMI0i2u4GOPXFTn9fgEIgy3kyrfm2dcKn/y6RQyoBQ1YutAP/dCfaX07o3g9Fjjfe5sD9JxBjZ1BS5P71z2bRy2g+QpnHSaMeaWujmb5RchV2QrET3CwJ7S7N9p/6oUqsGbXcKnbrogHgIG58E/st8cQjzpbmDZPL+Cpkvqoph97is0oaVkerlPE5qOKdeXBjKcEgl7PZs9iNDvVe9b6Vco3oilnPU6UXu9EepgFk7Se9h9c9T8APbJopv/pbg4qms+gLqtywdL5Iqwhe2NdzOsdfVuRhkOsieMwW7MppPQGpq2XhttS+OM6czlNEG1/G4kw+VYdZ2WpDMOPpUI="
